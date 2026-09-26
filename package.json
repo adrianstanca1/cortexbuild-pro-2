@@ -1,0 +1,26 @@
+{
+  "name": "cortexbuild-pro-2",
+  "version": "3.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "dependencies": {
+    "@fastify/cors": "^11.0.0",
+    "@fastify/cookie": "^11.0.0",
+    "@fastify/helmet": "^13.0.0",
+    "@fastify/jwt": "^10.0.0",
+    "@fastify/rate-limit": "^11.0.0",
+    "@fastify/static": "^10.0.0",
+    "@paralleldrive/cuid2": "^1.0.0",
+    "bcrypt": "^5.1.1",
+    "better-sqlite3": "^11.6.0",
+    "cors": "^2.8.5",
+    "drizzle-orm": "^0.40.0",
+    "fastify": "^5.0.0",
+    "undici": "^7.0.0",
+    "uuid": "^11.0.0",
+    "zod": "^3.23.0"
+  }
+}

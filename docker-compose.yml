@@ -1,0 +1,39 @@
+version: '3.9'
+
+services:
+  api:
+    build: ./server
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=sqlite:/data/cortexbuild.db
+      - JWT_SECRET=changeme-change-this-in-production
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434
+      - NODE_ENV=production
+      - PORT=3000
+    volumes:
+      - db_data:/data
+    # Ollama runs on the host machine, not in Docker
+    # Access via host.docker.internal (Docker 20.10+)
+    # Or set OLLAMA_BASE_URL=http://YOUR_VPS_IP:11434
+
+  web:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./static:/srv/static:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - api
+
+volumes:
+  db_data:
+  caddy_data:
+  caddy_config:

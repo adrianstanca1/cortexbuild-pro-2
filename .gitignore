@@ -1,0 +1,6 @@
+node_modules/
+cortexbuild.db
+cortexbuild.db-*
+*.tar.gz
+.DS_Store
+*.log

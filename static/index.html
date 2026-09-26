@@ -1,0 +1,1880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CortexBuild Pro — Construction OS</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<style>
+  /* ── Reset & Base ──────────────────────────────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0d1117;
+    --bg-elev: #161b22;
+    --bg-card: #1c2128;
+    --border: #30363d;
+    --text: #e6edf3;
+    --text-dim: #8b949e;
+    --text-mute: #6e7681;
+    --green: #3fb950;
+    --yellow: #d29922;
+    --red: #f85149;
+    --blue: #58a6ff;
+    --purple: #a371f7;
+    --radius: 8px;
+    --shadow: 0 1px 3px rgba(0,0,0,.4);
+    --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+  html, body { height: 100%; }
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--blue); text-decoration: none; }
+  button { font-family: inherit; cursor: pointer; }
+  input, select, textarea {
+    font-family: inherit;
+    font-size: 14px;
+    background: var(--bg-elev);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 8px 12px;
+    outline: none;
+    transition: border-color .15s;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--blue); }
+  textarea { resize: vertical; }
+  ::-webkit-scrollbar { width: 10px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 5px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-mute); }
+
+  /* ── Nav ────────────────────────────────────────────────────────────────── */
+  .topnav {
+    position: sticky; top: 0; z-index: 100;
+    display: flex; align-items: center; gap: 12px;
+    background: var(--bg-elev);
+    border-bottom: 1px solid var(--border);
+    padding: 8px 16px;
+    height: 52px;
+  }
+  .topnav .logo {
+    font-weight: 700; font-size: 16px;
+    color: var(--green);
+    display: flex; align-items: center; gap: 6px;
+    white-space: nowrap;
+  }
+  .topnav .logo svg { width: 22px; height: 22px; }
+  .topnav nav { display: flex; gap: 2px; margin-left: auto; }
+  .topnav nav a {
+    color: var(--text-dim);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all .15s;
+  }
+  .topnav nav a:hover, .topnav nav a.active {
+    color: var(--text);
+    background: var(--bg-card);
+  }
+  .topnav .user {
+    display: flex; align-items: center; gap: 8px;
+    color: var(--text-dim); font-size: 13px;
+    padding: 4px 8px;
+    border-radius: 20px;
+    background: var(--bg-card);
+  }
+  .topnav .user .avatar {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--blue);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 12px; color: #fff;
+  }
+
+  /* ── Layout ─────────────────────────────────────────────────────────────── */
+  .app { display: flex; min-height: calc(100vh - 52px); }
+  .sidebar {
+    width: 220px; flex-shrink: 0;
+    background: var(--bg-elev);
+    border-right: 1px solid var(--border);
+    padding: 12px 8px;
+    display: flex; flex-direction: column; gap: 2px;
+  }
+  .sidebar .section { font-size: 11px; color: var(--text-mute); text-transform: uppercase; letter-spacing: .05em; padding: 8px 12px 4px; font-weight: 600; }
+  .sidebar a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 7px 12px;
+    border-radius: 6px;
+    color: var(--text-dim);
+    font-size: 13px;
+    transition: all .1s;
+  }
+  .sidebar a:hover { background: var(--bg-card); color: var(--text); }
+  .sidebar a.active { background: var(--bg-card); color: var(--text); font-weight: 500; }
+  .sidebar a .icon { width: 16px; height: 16px; opacity: .7; }
+  .main {
+    flex: 1; overflow-y: auto; padding: 20px 24px;
+    display: flex; flex-direction: column; gap: 16px;
+  }
+
+  /* ── Cards & Panels ─────────────────────────────────────────────────────── */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    box-shadow: var(--shadow);
+  }
+  .card-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .card-header h3 { font-size: 15px; font-weight: 600; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 14px;
+    border-radius: 6px;
+    font-size: 13px; font-weight: 500;
+    border: 1px solid var(--border);
+    background: var(--bg-elev);
+    color: var(--text);
+    transition: all .15s;
+    white-space: nowrap;
+  }
+  .btn:hover { background: var(--border); }
+  .btn-primary { background: var(--blue); color: #fff; border-color: var(--blue); }
+  .btn-primary:hover { background: #4090e0; }
+  .btn-danger { color: var(--red); border-color: var(--red); }
+  .btn-danger:hover { background: var(--red); color: #fff; }
+  .btn-sm { padding: 4px 10px; font-size: 12px; }
+  .btn-icon { padding: 6px; min-width: 32px; justify-content: center; }
+
+  /* ── Tables ──────────────────────────────────────────────────────────────── */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  th { color: var(--text-dim); font-weight: 500; font-size: 12px; text-transform: uppercase; letter-spacing: .03em; }
+  tr:hover td { background: rgba(255,255,255,.02); }
+  td .tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .tag-green { background: rgba(63,185,80,.15); color: var(--green); }
+  .tag-yellow { background: rgba(210,153,34,.15); color: var(--yellow); }
+  .tag-red { background: rgba(248,81,73,.15); color: var(--red); }
+  .tag-blue { background: rgba(88,166,255,.15); color: var(--blue); }
+  .tag-gray { background: rgba(139,148,158,.15); color: var(--text-dim); }
+
+  /* ── Metric tiles ────────────────────────────────────────────────────────── */
+  .metrics { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin-bottom: 8px; }
+  .metric {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+  }
+  .metric .label { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: .04em; }
+  .metric .value { font-size: 28px; font-weight: 700; margin-top: 4px; line-height: 1.2; }
+  .metric .sub { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+
+  /* ── Forms ───────────────────────────────────────────────────────────────── */
+  .form-group { margin-bottom: 12px; }
+  .form-group label { display: block; font-size: 12px; color: var(--text-dim); margin-bottom: 4px; font-weight: 500; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+
+  /* ── Login page ──────────────────────────────────────────────────────────── */
+  .login-page {
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--bg);
+  }
+  .login-card {
+    width: 100%; max-width: 380px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 32px;
+    box-shadow: 0 4px 24px rgba(0,0,0,.4);
+  }
+  .login-card h1 { font-size: 20px; margin-bottom: 4px; }
+  .login-card p { color: var(--text-dim); font-size: 13px; margin-bottom: 24px; }
+  .login-card .logo { color: var(--green); font-weight: 700; font-size: 18px; margin-bottom: 20px; display: block; }
+
+  /* ── Modal ───────────────────────────────────────────────────────────────── */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.6);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 200;
+  }
+  .modal {
+    width: 100%; max-width: 520px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 8px 32px rgba(0,0,0,.5);
+    max-height: 90vh; overflow-y: auto;
+  }
+  .modal h3 { font-size: 17px; margin-bottom: 16px; }
+
+  /* ── Risk heatmap ────────────────────────────────────────────────────────── */
+  .risk-cell {
+    width: 48px; height: 48px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 600;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: transform .1s;
+    border: 1px solid transparent;
+  }
+  .risk-cell:hover { transform: scale(1.1); }
+  .risk-low { background: rgba(63,185,80,.2); color: var(--green); }
+  .risk-med { background: rgba(210,153,34,.2); color: var(--yellow); }
+  .risk-high { background: rgba(248,81,73,.2); color: var(--red); }
+  .risk-axis { font-size: 10px; color: var(--text-mute); }
+
+  /* ── Misc ────────────────────────────────────────────────────────────────── */
+  .empty-state {
+    text-align: center; padding: 40px 20px;
+    color: var(--text-dim);
+  }
+  .empty-state svg { width: 48px; height: 48px; opacity: .4; margin-bottom: 12px; }
+  .empty-state p { font-size: 13px; }
+  .flex { display: flex; align-items: center; gap: 8px; }
+  .gap-2 { gap: 16px; }
+  .items-center { align-items: center; }
+  .justify-between { justify-content: space-between; }
+  .mt-2 { margin-top: 8px; }
+  .mb-2 { margin-bottom: 8px; }
+  .w-full { width: 100%; }
+  .text-dim { color: var(--text-dim); }
+  .text-mute { color: var(--text-mute); }
+  .text-sm { font-size: 12px; }
+  .text-xs { font-size: 11px; }
+  .fw-500 { font-weight: 500; }
+  .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .avatar-sm { width: 24px; height: 24px; border-radius: 50%; background: var(--purple); display: inline-flex; align-items: center; justify-content: center; font-size: 11px; color: #fff; font-weight: 600; }
+
+  /* ── Toast ───────────────────────────────────────────────────────────────── */
+  .toast {
+    position: fixed; bottom: 20px; right: 20px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 16px;
+    box-shadow: 0 4px 16px rgba(0,0,0,.4);
+    font-size: 13px;
+    z-index: 300;
+    max-width: 320px;
+  }
+  .toast.error { border-color: var(--red); color: var(--red); }
+  .toast.success { border-color: var(--green); color: var(--green); }
+</style>
+</head>
+<body>
+
+<!-- ── Login Page ──────────────────────────────────────────────────────────── -->
+<div id="login-page" class="login-page">
+  <div class="login-card">
+    <span class="logo">&#9881; CortexBuild Pro</span>
+    <h1>Sign in to your workspace</h1>
+    <p>Manage projects, track risks, and run your construction business with AI.</p>
+    <form id="login-form">
+      <div class="form-group">
+        <label for="login-email">Email</label>
+        <input id="login-email" type="email" placeholder="you@company.com" required>
+      </div>
+      <div class="form-group">
+        <label for="login-password">Password</label>
+        <input id="login-password" type="password" placeholder="••••••••" required>
+      </div>
+      <button type="submit" class="btn btn-primary w-full" style="margin-top:8px;">Sign in</button>
+    </form>
+    <p style="margin-top:16px;">
+      <button id="show-register" class="btn btn-sm" style="font-size:12px;">Create workspace</button>
+    </p>
+  </div>
+</div>
+
+<!-- ── Register Modal ──────────────────────────────────────────────────────── -->
+<div id="register-modal" class="modal-overlay" style="display:none;">
+  <div class="modal">
+    <h3>Create your workspace</h3>
+    <form id="register-form">
+      <div class="form-group">
+        <label>Full name</label>
+        <input name="name" type="text" placeholder="Adrian Stanca" required>
+      </div>
+      <div class="form-group">
+        <label>Work email</label>
+        <input name="email" type="email" placeholder="adrian@cortexbuildpro.tech" required>
+      </div>
+      <div class="form-group">
+        <label>Company (optional)</label>
+        <input name="company" type="text" placeholder="CortexBuild Pro">
+      </div>
+      <div class="form-group">
+        <label>Password (min 8 chars)</label>
+        <input name="password" type="password" placeholder="••••••••" required minlength="8">
+      </div>
+      <button type="submit" class="btn btn-primary w-full" style="margin-top:8px;">Create workspace</button>
+    </form>
+    <p style="margin-top:12px;text-align:center;">
+      <button id="cancel-register" class="btn btn-sm" style="font-size:12px;">Back to sign in</button>
+    </p>
+  </div>
+</div>
+
+<!-- ── App Shell ───────────────────────────────────────────────────────────── -->
+<div id="app-shell" style="display:none;">
+  <div class="topnav">
+    <div class="logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6"/></svg>
+      CortexBuild Pro
+    </div>
+    <nav id="main-nav">
+      <a href="#" data-page="dashboard" class="active">Dashboard</a>
+      <a href="#" data-page="projects">Projects</a>
+      <a href="#" data-page="risks">Risks</a>
+      <a href="#" data-page="snags">Snags</a>
+      <a href="#" data-page="rfis">RFIs</a>
+      <a href="#" data-page="subs">Subs</a>
+      <a href="#" data-page="logs">Daily Logs</a>
+      <a href="#" data-page="agent">AI Agent</a>
+    </nav>
+    <div class="user">
+      <div class="avatar" id="user-avatar">A</div>
+      <span id="user-name">User</span>
+      <button class="btn btn-sm btn-danger" id="btn-logout" style="padding:2px 8px;font-size:11px;">Logout</button>
+    </div>
+  </div>
+
+  <div class="app">
+    <div class="sidebar" id="sidebar-first">
+      <!-- Dynamic sidebar content -->
+    </div>
+    <div class="main" id="page-content">
+      <!-- Dynamic page content -->
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script>
+// ── API Client ────────────────────────────────────────────────────────────────
+const API = {
+  async request(path, options = {}) {
+    const token = localStorage.getItem('cb_token')
+    const headers = { 'Content-Type': 'application/json', ...options.headers }
+    if (token) headers['Authorization'] = `Bearer ${token}`
+    const res = await fetch(path, { ...options, headers })
+    const data = await res.json()
+    if (!res.ok) {
+      if (res.status === 401) { logout() }
+      throw new Error(data.error || 'Request failed', { cause: { status: res.status } })
+    }
+    return data
+  },
+  get: (path) => API.request(path),
+  post: (path, body) => API.request(path, { method: 'POST', body: JSON.stringify(body) }),
+  patch: (path, body) => API.request(path, { method: 'PATCH', body: JSON.stringify(body) }),
+  delete: (path) => API.request(path, { method: 'DELETE' }),
+}
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let currentPage = 'dashboard'
+let currentProjectId = null
+let toastTimer = null
+
+function showToast(msg, type = 'success') {
+  const el = document.getElementById('toast-container')
+  const toast = document.createElement('div')
+  toast.className = `toast ${type}`
+  toast.textContent = msg
+  el.appendChild(toast)
+  clearTimeout(toastTimer)
+  toastTimer = setTimeout(() => toast.remove(), 3000)
+}
+
+function logout() {
+  localStorage.removeItem('cb_token')
+  localStorage.removeItem('cb_user')
+  document.getElementById('login-page').style.display = ''
+  document.getElementById('app-shell').style.display = 'none'
+  document.getElementById('register-modal').style.display = 'none'
+}
+
+function requireAuth() {
+  const token = localStorage.getItem('cb_token')
+  if (!token) { window.location.reload() }
+  return token
+}
+
+function getUser() {
+  try { return JSON.parse(localStorage.getItem('cb_user') || 'null') } catch { return null }
+}
+
+// ── Auth ──────────────────────────────────────────────────────────────────────
+async function handleLogin(e) {
+  e.preventDefault()
+  const form = e.target
+  const email = form.querySelector('#login-email').value
+  const password = form.querySelector('#login-password').value
+  try {
+    const data = await API.post('/api/auth/login', { email, password })
+    localStorage.setItem('cb_token', data.token)
+    localStorage.setItem('cb_user', JSON.stringify(data.user))
+    document.getElementById('login-page').style.display = 'none'
+    document.getElementById('app-shell').style.display = ''
+    renderApp()
+    showToast(`Welcome back, ${data.user.name}`)
+  } catch (err) {
+    showToast(err.message || 'Login failed', 'error')
+  }
+}
+
+async function handleRegister(e) {
+  e.preventDefault()
+  const form = e.target
+  const data = Object.fromEntries(new FormData(form).entries())
+  try {
+    const res = await API.post('/api/auth/register', data)
+    localStorage.setItem('cb_token', res.token)
+    localStorage.setItem('cb_user', JSON.stringify(res.user))
+    document.getElementById('register-modal').style.display = 'none'
+    document.getElementById('login-page').style.display = 'none'
+    document.getElementById('app-shell').style.display = ''
+    renderApp()
+    showToast(`Workspace created! Welcome, ${res.user.name}`)
+  } catch (err) {
+    showToast(err.message || 'Registration failed', 'error')
+  }
+}
+
+document.getElementById('login-form').addEventListener('submit', handleLogin)
+document.getElementById('register-form').addEventListener('submit', handleRegister)
+document.getElementById('show-register').addEventListener('click', () => {
+  document.getElementById('register-modal').style.display = 'flex'
+})
+document.getElementById('cancel-register').addEventListener('click', () => {
+  document.getElementById('register-modal').style.display = 'none'
+})
+document.getElementById('btn-logout').addEventListener('click', logout)
+
+// ── Navigation ────────────────────────────────────────────────────────────────
+function navigate(page, projectId = null) {
+  currentPage = page
+  currentProjectId = projectId
+  document.querySelectorAll('#main-nav a').forEach(a => {
+    a.classList.toggle('active', a.dataset.page === page)
+  })
+  renderPage()
+}
+
+document.getElementById('main-nav').addEventListener('click', (e) => {
+  const a = e.target.closest('a')
+  if (!a) return
+  e.preventDefault()
+  navigate(a.dataset.page)
+})
+
+// ── Render App ────────────────────────────────────────────────────────────────
+function renderApp() {
+  const user = getUser()
+  if (!user) return
+  document.getElementById('user-name').textContent = user.name.split(' ')[0]
+  document.getElementById('user-avatar').textContent = user.name.charAt(0).toUpperCase()
+
+  navigate('dashboard')
+}
+
+// ── Page Rendering ────────────────────────────────────────────────────────────
+async function renderPage() {
+  const content = document.getElementById('page-content')
+  const sidebar = document.getElementById('sidebar-first')
+  content.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><p>Loading...</p></div>'
+
+  switch (currentPage) {
+    case 'dashboard': await renderDashboard(content, sidebar); break
+    case 'projects': await renderProjects(content, sidebar); break
+    case 'risks': await renderRisks(content, sidebar); break
+    case 'snags': await renderSnags(content, sidebar); break
+    case 'rfis': await renderRFIs(content, sidebar); break
+    case 'subs': await renderSubs(content, sidebar); break
+    case 'logs': await renderLogs(content, sidebar); break
+    case 'agent': await renderAgent(content, sidebar); break
+  }
+}
+
+// ── Dashboard ────────────────────────────────────────────────────────────────
+async function renderDashboard(content, sidebar) {
+  try {
+    const [projects, risks, snags, logs] = await Promise.all([
+      API.get('/api/projects'),
+      API.get('/api/risks'),
+      API.get('/api/snags'),
+      API.get('/api/daily-logs'),
+    ])
+
+    const totalValue = projects.reduce((s, p) => s + (parseFloat(p.value) || 0), 0)
+    const avgRisk = risks.length ? risks.reduce((s, r) => s + (r.risk_score || 0), 0) / risks.length : 0
+    const openSnags = snags.filter(s => s.status === 'open').length
+    const recentLog = logs[0]
+
+    sidebar.innerHTML = `
+      <div class="section">Quick Actions</div>
+      <a href="#" data-page="projects" class="${currentPage==='projects'?'active':''}"><span class="icon">📋</span> Projects</a>
+      <a href="#" data-page="risks" class="${currentPage==='risks'?'active':''}"><span class="icon">⚠️</span> Risks</a>
+      <a href="#" data-page="snags" class="${currentPage==='snags'?'active':''}"><span class="icon">🔍</span> Snags</a>
+      <a href="#" data-page="rfis" class="${currentPage==='rfis'?'active':''}"><span class="icon">❓</span> RFIs</a>
+      <a href="#" data-page="subs" class="${currentPage==='subs'?'active':''}"><span class="icon">👷</span> Subs</a>
+      <a href="#" data-page="logs" class="${currentPage==='logs'?'active':''}"><span class="icon">📝</span> Daily Logs</a>
+      <a href="#" data-page="agent" class="${currentPage==='agent'?'active':''}"><span class="icon">🤖</span> AI Agent</a>
+      <div style="flex:1;"></div>
+      <div class="section">Workspace</div>
+      <div style="padding:8px 12px;font-size:12px;color:var(--text-dim);">
+        ${getUser()?.name || 'Workspace'}<br>
+        <span style="color:var(--text-mute);">${projects.length} projects · ${risks.length} risks tracked</span>
+      </div>
+    `
+
+    content.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+        <h2>Dashboard</h2>
+        <div class="flex gap-2">
+          <button class="btn" onclick=" navigate('projects')">+ New Project</button>
+          <button class="btn btn-primary" onclick="navigate('agent')">Ask AI Agent</button>
+        </div>
+      </div>
+
+      <div class="metrics">
+        <div class="metric">
+          <div class="label">Total Project Value</div>
+          <div class="value">£${totalValue.toLocaleString('en-GB', {maximumFractionDigits:0})}</div>
+          <div class="sub">${projects.length} active projects</div>
+        </div>
+        <div class="metric">
+          <div class="label">Avg Risk Score</div>
+          <div class="value" style="color:${avgRisk > 60 ? 'var(--red)' : avgRisk > 30 ? 'var(--yellow)' : 'var(--green)'};">${avgRisk > 0 ? avgRisk.toFixed(0) : '—'}</div>
+          <div class="sub">${risks.length} risks tracked</div>
+        </div>
+        <div class="metric">
+          <div class="label">Open Snags</div>
+          <div class="value" style="color:var(--red);">${openSnags}</div>
+          <div class="sub">Need attention</div>
+        </div>
+        <div class="metric">
+          <div class="label">Recent Activity</div>
+          <div class="value" style="font-size:18px;color:var(--text-dim);">${recentLog ? new Date(recentLog.log_date).toLocaleDateString('en-GB') : 'No logs yet'}</div>
+          <div class="sub">${recentLog?.ai_summary ? recentLog.ai_summary.substring(0, 60) + '…' : 'Start logging daily progress'}</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h3>Active Projects</h3>
+          <button class="btn btn-sm" onclick="navigate('projects')">View all</button>
+        </div>
+        ${projects.length === 0 ? `
+          <div class="empty-state">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18"/></svg>
+            <p>No projects yet. Create your first project to get started.</p>
+            <button class="btn btn-primary" style="margin-top:12px;" onclick="navigate('projects')">+ Create Project</button>
+          </div>
+        ` : `
+          <table>
+            <thead><tr><th>Project</th><th>Client</th><th>Value</th><th>Progress</th><th>Status</th><th>Risk</th></tr></thead>
+            <tbody>
+              ${projects.slice(0, 8).map(p => `
+                <tr>
+                  <td class="fw-500">${p.name}</td>
+                  <td class="text-dim">${p.client || '—'}</td>
+                  <td>£${(parseFloat(p.value)||0).toLocaleString('en-GB', {maximumFractionDigits:0})}</td>
+                  <td>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                      <div style="flex:1;height:6px;background:var(--bg-elev);border-radius:3px;overflow:hidden;max-width:100px;">
+                        <div style="width:${p.pct}%;height:100%;background:${p.health_color === 'green' ? 'var(--green)' : p.health_color === 'yellow' ? 'var(--yellow)' : 'var(--red)'};border-radius:3px;"></div>
+                      </div>
+                      <span class="text-sm">${p.pct}%</span>
+                    </div>
+                  </td>
+                  <td><span class="tag tag-${p.status === 'completed' ? 'green' : p.status === 'active' ? 'blue' : p.status === 'quoting' ? 'yellow' : 'gray'}">${p.status}</span></td>
+                  <td><span class="tag tag-${p.health_color}">${p.health_color}</span></td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `}
+      </div>
+    `
+  } catch (err) {
+    content.innerHTML = `<div class="empty-state"><p>Error loading dashboard: ${err.message}</p></div>`
+  }
+}
+
+// ── Projects ──────────────────────────────────────────────────────────────────
+async function renderProjects(content, sidebar) {
+  const projects = await API.get('/api/projects')
+  const search = localStorage.getItem('proj-search') || ''
+
+  sidebar.innerHTML = `
+    <div class="section">Projects</div>
+    <a href="#" data-page="projects" class="active"><span class="icon">📋</span> All Projects</a>
+    <div style="flex:1;"></div>
+    <div class="section">Workspace</div>
+    <div style="padding:8px 12px;font-size:12px;color:var(--text-dim);">
+      ${getUser()?.name || 'Workspace'} · ${projects.length} projects
+    </div>
+  `
+
+  content.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
+      <h2>Projects</h2>
+      <div class="flex gap-2">
+        <input id="proj-search" type="text" placeholder="Search projects..." value="${search}"
+          style="width:200px;padding:6px 10px;font-size:13px;" oninput="localStorage.setItem('proj-search', this.value)">
+        <button class="btn btn-primary" id="btn-new-project">+ New Project</button>
+      </div>
+    </div>
+
+    <div id="projects-list">
+      ${projects.length === 0 ? `
+        <div class="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18M8 10h8M8 14h5"/></svg>
+          <p>No projects found. Create your first project to start tracking.</p>
+          <button class="btn btn-primary" style="margin-top:12px;" onclick="openNewProjectModal()">+ Create Project</button>
+        </div>
+      ` : `
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;">
+          ${projects.map(p => `
+            <div class="card" style="cursor:pointer;" onclick="selectProject('${p.id}')">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+                <div>
+                  <div class="fw-500" style="font-size:15px;">${p.name}</div>
+                  <div class="text-dim text-sm">${p.client || 'No client'}</div>
+                </div>
+                <span class="tag tag-${p.status === 'completed' ? 'green' : p.status === 'active' ? 'blue' : p.status === 'quoting' ? 'yellow' : 'gray'}">${p.status}</span>
+              </div>
+              <div style="display:flex;gap:16px;font-size:13px;margin-bottom:8px;">
+                <div><span class="text-dim">Value:</span> £${(parseFloat(p.value)||0).toLocaleString('en-GB', {maximumFractionDigits:0})}</div>
+                <div><span class="text-dim">Progress:</span> ${p.pct}%</div>
+                ${p.addr ? `<div><span class="text-dim">Site:</span> ${p.addr.substring(0, 30)}${p.addr.length > 30 ? '…' : ''}</div>` : ''}
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div style="flex:1;height:6px;background:var(--bg-elev);border-radius:3px;overflow:hidden;">
+                  <div style="width:${p.pct}%;height:100%;background:${p.health_color === 'green' ? 'var(--green)' : p.health_color === 'yellow' ? 'var(--yellow)' : 'var(--red)'};"></div>
+                </div>
+                <span class="tag tag-${p.health_color}" style="font-size:10px;">${p.health_color}</span>
+                ${p.risk_score ? `<span class="text-xs text-dim">Risk: ${p.risk_score.toFixed(0)}</span>` : ''}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `}
+    </div>
+  `
+
+  document.getElementById('btn-new-project').addEventListener('click', openNewProjectModal)
+}
+
+async function selectProject(id) {
+  currentProjectId = id
+  const project = await API.get(`/api/projects/${id}`)
+  renderProjectDetail(project)
+}
+
+async function renderProjectDetail(project) {
+  const content = document.getElementById('page-content')
+  const sidebar = document.getElementById('sidebar-first')
+
+  sidebar.innerHTML = `
+    <div class="section">Project</div>
+    <a href="#" data-page="projects" onclick="navigate('projects')" class="${currentPage==='projects'?'active':''}"><span class="icon">📋</span> Back to Projects</a>
+    <div style="flex:1;"></div>
+    <div class="section">Workspace</div>
+    <div style="padding:8px 12px;font-size:12px;color:var(--text-dim);">
+      ${getUser()?.name || 'Workspace'}
+    </div>
+  `
+
+  content.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;">
+      <div>
+        <h2 style="font-size:20px;">${project.name}</h2>
+        <div class="text-dim" style="margin-top:4px;">${project.client || 'No client assigned'} · ${project.addr || 'No site address'}</div>
+      </div>
+      <div class="flex gap-2">
+        <button class="btn" onclick="editProject()">Edit</button>
+        <button class="btn btn-danger" onclick="deleteProject('${project.id}')">Delete</button>
+      </div>
+    </div>
+
+    <div class="metrics">
+      <div class="metric">
+        <div class="label">Contract Value</div>
+        <div class="value">£${parseFloat(project.value||0).toLocaleString('en-GB', {maximumFractionDigits:0})}</div>
+        <div class="sub">${project.pct}% complete</div>
+      </div>
+      <div class="metric">
+        <div class="label">Risk Score</div>
+        <div class="value" style="color:${project.health_color === 'green' ? 'var(--green)' : project.health_color === 'yellow' ? 'var(--yellow)' : 'var(--red)'};">${project.risk_score ? project.risk_score.toFixed(0) : '—'}</div>
+        <div class="sub">${project.health_color} status</div>
+      </div>
+      <div class="metric">
+        <div class="label">Team on Site</div>
+        <div class="value">${project.team_count || 0}</div>
+        <div class="sub">workers today</div>
+      </div>
+      <div class="metric">
+        <div class="label">Target Completion</div>
+        <div class="value" style="font-size:18px;">${project.due ? new Date(project.due).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'}) : 'Not set'}</div>
+        <div class="sub">${project.status} phase</div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="card">
+        <div class="card-header"><h3>Tasks</h3><button class="btn btn-sm" onclick="openTaskModal('${project.id}')">+ Add</button></div>
+        <div id="project-tasks">
+          ${await renderProjectTasks(project.id)}
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h3>Recent Risks</h3><button class="btn btn-sm" onclick="openRiskModal('${project.id}')">+ Add Risk</button></div>
+        <div id="project-risks">
+          ${await renderProjectRisks(project.id)}
+        </div>
+      </div>
+    </div>
+  `
+}
+
+async function renderProjectTasks(projectId) {
+  const tasks = await API.get(`/api/tasks?project_id=${projectId}`)
+  if (!tasks.length) return '<div class="empty-state" style="padding:20px;"><p>No tasks yet. Add your first task.</p></div>'
+  return `<table><thead><tr><th>Task</th><th>Assignee</th><th>Due</th><th>Priority</th><th>Done</th></tr></thead>
+    <tbody>${tasks.map(t => `
+      <tr>
+        <td>${t.title}</td>
+        <td class="text-dim">${t.assignee || '—'}</td>
+        <td class="text-dim">${t.due ? new Date(t.due).toLocaleDateString('en-GB') : '—'}</td>
+        <td><span class="tag tag-${t.prio === 'high' ? 'red' : t.prio === 'med' ? 'yellow' : 'gray'}">${t.prio}</span></td>
+        <td>${t.done ? '<span class="tag tag-green">Done</span>' : '<span class="tag tag-gray">Open</span>'}</td>
+      </tr>
+    `).join('')}</tbody></table>`
+}
+
+async function renderProjectRisks(projectId) {
+  const risks = await API.get(`/api/risks?project_id=${projectId}`)
+  if (!risks.length) return '<div class="empty-state" style="padding:20px;"><p>No risks identified. Run an AI risk scan.</p></div>'
+  return `<table><thead><tr><th>Risk</th><th>Score</th><th>Status</th></tr></thead>
+    <tbody>${risks.slice(0, 5).map(r => `
+      <tr>
+        <td><div class="fw-500">${r.title}</div><div class="text-dim text-xs">${r.type} · prob: ${r.probability}% · impact: ${r.impact}%</div></td>
+        <td><span class="tag tag-${r.risk_score > 60 ? 'red' : r.risk_score > 30 ? 'yellow' : 'green'}">${r.risk_score.toFixed(0)}</span></td>
+        <td><span class="tag tag-${r.status === 'mitigated' ? 'green' : r.status === 'closed' ? 'blue' : 'yellow'}">${r.status}</span></td>
+      </tr>
+    `).join('')}</tbody></table>`
+}
+
+// ── New Project Modal ─────────────────────────────────────────────────────────
+function openNewProjectModal() {
+  const modal = document.createElement('div')
+  modal.className = 'modal-overlay'
+  modal.id = 'new-project-modal'
+  modal.innerHTML = `
+    <div class="modal">
+      <h3>New Project</h3>
+      <form id="new-project-form">
+        <div class="form-group">
+          <label>Project name *</label>
+          <input name="name" type="text" placeholder="Riverside Commercial Block" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Client</label>
+            <input name="client" type="text" placeholder="Riverside Developments Ltd">
+          </div>
+          <div class="form-group">
+            <label>Contract value (£)</label>
+            <input name="value" type="number" placeholder="2500000">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Site address</label>
+          <input name="addr" type="text" placeholder="12 Riverside Road, London">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Target completion</label>
+            <input name="due" type="date">
+          </div>
+          <div class="form-group">
+            <label>Status</label>
+            <select name="status">
+              <option value="quoting">Quoting</option>
+              <option value="active">Active</option>
+              <option value="on-hold">On Hold</option>
+              <option value="completed">Completed</option>
+            </select>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary" style="margin-top:8px;">Create Project</button>
+      </form>
+    </div>
+  `
+  modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove() })
+  document.body.appendChild(modal)
+
+  modal.querySelector('#new-project-form').addEventListener('submit', async (e) => {
+    e.preventDefault()
+    const form = e.target
+    const data = Object.fromEntries(new FormData(form).entries())
+    try {
+      await API.post('/api/projects', data)
+      modal.remove()
+      renderPage()
+      showToast('Project created')
+    } catch (err) {
+      showToast(err.message, 'error')
+    }
+  })
+}
+
+async function editProject() {
+  if (!currentProjectId) return
+  const project = await API.get(`/api/projects/${currentProjectId}`)
+  const modal = document.createElement('div')
+  modal.className = 'modal-overlay'
+  modal.innerHTML = `
+    <div class="modal">
+      <h3>Edit Project</h3>
+      <form id="edit-project-form">
+        <input type="hidden" name="id" value="${project.id}">
+        <div class="form-group"><label>Name</label><input name="name" value="${project.name}"></div>
+        <div class="form-group"><label>Client</label><input name="client" value="${project.client || ''}"></div>
+        <div class="form-group"><label>Value (£)</label><input name="value" type="number" value="${project.value || 0}"></div>
+        <div class="form-group"><label>Progress %</label><input name="pct" type="number" min="0" max="100" value="${project.pct || 0}"></div>
+        <div class="form-group"><label>Status</label><select name="status">
+          <option value="quoting" ${project.status==='quoting'?'selected':''}>Quoting</option>
+          <option value="active" ${project.status==='active'?'selected':''}>Active</option>
+          <option value="on-hold" ${project.status==='on-hold'?'selected':''}>On Hold</option>
+          <option value="completed" ${project.status==='completed'?'selected':''}>Completed</option>
+        </select></div>
+        <div class="form-group"><label>Site address</label><input name="addr" value="${project.addr || ''}"></div>
+        <button type="submit" class="btn btn-primary">Save</button>
+      </form>
+    </div>
+  `
+  modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove() })
+  document.body.appendChild(modal)
+  modal.querySelector('#edit-project-form').addEventListener('submit', async (e) => {
+    e.preventDefault()
+    const data = Object.fromEntries(new FormData(e.target).entries())
+    delete data.id
+    try {
+      await API.patch(`/api/projects/${currentProjectId}`, data)
+      modal.remove()
+      renderPage()
+      showToast('Project updated')
+    } catch (err) { showToast(err.message, 'error') }
+  })
+}
+
+async function deleteProject(id) {
+  if (!confirm('Delete this project and all its data? This cannot be undone.')) return
+  try {
+    await API.delete(`/api/projects/${id}`)
+    currentProjectId = null
+    renderPage()
+    showToast('Project deleted')
+  } catch (err) { showToast(err.message, 'error') }
+}
+
+// ── Tasks ──────────────────────────────────────────────────────────────────────
+function openTaskModal(projectId) {
+  const modal = document.createElement('div')
+  modal.className = 'modal-overlay'
+  modal.innerHTML = `
+    <div class="modal">
+      <h3>Add Task</h3>
+      <form id="task-form">
+        <input type="hidden" name="project_id" value="${projectId}">
+        <div class="form-group"><label>Task title *</label><input name="title" type="text" placeholder="Install M&E risers on levels 3-5" required></div>
+        <div class="form-row">
+          <div class="form-group"><label>Assignee</label><input name="assignee" type="text" placeholder="John Smith"></div>
+          <div class="form-group"><label>Due date</label><input name="due" type="date"></div>
+        </div>
+        <div class="form-group"><label>Priority</label>
+          <select name="prio"><option value="high">High</option><option value="med" selected>Medium</option><option value="low">Low</option></select>
+        </div>
+        <button type="submit" class="btn btn-primary">Add Task</button>
+      </form>
+    </div>
+  `
+  modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove() })
+  document.body.appendChild(modal)
+  modal.querySelector('#task-form').addEventListener('submit', async (e) => {
+    e.preventDefault()
+    const data = Object.fromEntries(new FormData(e.target).entries())
+    try {
+      await API.post('/api/tasks', data)
+      modal.remove()
+      renderPage()
+      showToast('Task added')
+    } catch (err) { showToast(err.message, 'error') }
+  })
+}
+
+// ── Risks ──────────────────────────────────────────────────────────────────────
+function openRiskModal(projectId) {
+  const modal = document.createElement('div')
+  modal.className = 'modal-overlay'
+  modal.innerHTML = `
+    <div class="modal">
+      <h3>Add Risk</h3>
+      <form id="risk-form">
+        <input type="hidden" name="project_id" value="${projectId}">
+        <div class="form-row">
+          <div class="form-group"><label>Type</label><select name="type">
+            <option value="cost">Cost Overrun</option>
+            <option value="schedule">Schedule Delay</option>
+            <option value="safety">Safety Incident</option>
+            <option value="quality">Quality Issue</option>
+            <option value="supply">Supply Chain</option>
+            <option value="weather">Weather</option>
+            <option value="labor">Labor Shortage</option>
+            <option value="regulatory">Regulatory</option>
+            <option value="general">General</option>
+          </select></div>
+          <div class="form-group"><label>Title *</label><input name="title" type="text" placeholder="Flooring material delay" required></div>
+        </div>
+        <div class="form-row-3">
+          <div class="form-group"><label>Probability (0-100)</label><input name="probability" type="number" min="0" max="100" value="50"></div>
+          <div class="form-group"><label>Impact (0-100)</label><input name="impact" type="number" min="0" max="100" value="50"></div>
+          <div class="form-group"><label> predicted date</label><input name="predicted_date" type="date"></div>
+        </div>
+        <div class="form-group"><label>Mitigation strategy</label><textarea name="mitigation" rows="2" placeholder="Order from alternative supplier, allow 2-week buffer"></textarea></div>
+        <button type="submit" class="btn btn-primary">Add Risk</button>
+      </form>
+    </div>
+  `
+  modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove() })
+  document.body.appendChild(modal)
+  modal.querySelector('#risk-form').addEventListener('submit', async (e) => {
+    e.preventDefault()
+    const data = Object.fromEntries(new FormData(e.target).entries())
+    try {
+      await API.post('/api/risks', data)
+      modal.remove()
+      renderPage()
+      showToast('Risk added')
+    } catch (err) { showToast(err.message, 'error') }
+  })
+}
+
+// ── Risks Page ────────────────────────────────────────────────────────────────
+async function renderRisks(content, sidebar) {
+  const risks = await API.get('/api/risks')
+  const projects = await API.get('/api/projects')
+
+  sidebar.innerHTML = `
+    <div class="section">Navigation</div>
+    <a href="#" data-page="dashboard" onclick="navigate('dashboard')" class="${currentPage==='dashboard'?'active':''}"><span class="icon">🏠</span> Dashboard</a>
+    <a href="#" data-page="projects" onclick="navigate('projects')" class="${currentPage==='projects'?'active':''}"><span class="icon">📋</span> Projects</a>
+    <a href="#" data-page="risks" class="active"><span class="icon">⚠️</span> Risks</a>
+    <div style="flex:1;"></div>
+    <div class="section">Workspace</div>
+    <div style="padding:8px 12px;font-size:12px;color:var(--text-dim);">${getUser()?.name || 'Workspace'}</div>
+  `
+
+  content.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
+      <h2>Risk Register</h2>
+      <div class="flex gap-2">
+        <button class="btn" onclick="runAIScan()">🤖 AI Risk Scan</button>
+        <button class="btn btn-primary" onclick="openRiskModal(currentProjectId)">+ Add Risk</button>
+      </div>
+    </div>
+
+    ${risks.length === 0 ? `
+      <div class="card">
+        <div class="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 9v4M12 17h.01M10.3 3.9l-.5 1.2M13.7 3.9l.5 1.2M3 12h4M17 12h4M5.6 5.6l-1 1M19.4 5.6l1 1M5.6 18.4l-1-1M19.4 18.4l1-1"/></svg>
+          <p>No risks recorded. Run an AI risk scan on your projects to identify potential issues before they become problems.</p>
+          <button class="btn btn-primary" style="margin-top:12px;" onclick="runAIScan()">Run AI Risk Scan</button>
+        </div>
+      </div>
+    ` : `
+      <div class="card">
+        <div class="card-header">
+          <h3>All Risks (${risks.length})</h3>
+          <select id="risk-filter" class="text-sm" style="padding:4px 8px;" onchange="filterRisks()">
+            <option value="">All statuses</option>
+            <option value="open">Open</option>
+            <option value="mitigated">Mitigated</option>
+            <option value="closed">Closed</option>
+          </select>
+        </div>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead><tr>
+              <th>Risk</th><th>Type</th><th>Project</th>
+              <th>Prob.</th><th>Impact</th><th>Score</th>
+              <th>Predicted</th><th>Status</th><th>Actions</th>
+            </tr></thead>
+            <tbody id="risks-body">
+              ${risks.map(r => `
+                <tr data-status="${r.status}">
+                  <td>
+                    <div class="fw-500">${r.title}</div>
+                    <div class="text-dim text-xs">${r.type}${r.mitigation ? ' · ' + r.mitigation.substring(0, 40) + '…' : ''}</div>
+                  </td>
+                  <td><span class="tag tag-blue">${r.type}</span></td>
+                  <td class="text-dim truncate" style="max-width:150px;">${r.project_id ? (await getProjectName(r.project_id)) : '—'}</td>
+                  <td class="text-center">${r.probability}%</td>
+                  <td class="text-center">${r.impact}%</td>
+                  <td class="text-center"><span class="tag tag-${r.risk_score > 60 ? 'red' : r.risk_score > 30 ? 'yellow' : 'green'}" style="font-weight:600;">${r.risk_score.toFixed(0)}</span></td>
+                  <td class="text-dim">${r.predicted_date ? new Date(r.predicted_date).toLocaleDateString('en-GB') : '—'}</td>
+                  <td><span class="tag tag-${r.status === 'mitigated' ? 'green' : r.status === 'closed' ? 'blue' : 'yellow'}">${r.status}</span></td>
+                  <td>
+                    <div class="flex gap-2">
+                      <button class="btn btn-sm btn-icon" title="Edit" onclick="editRisk('${r.id}')">✏️</button>
+                      <button class="btn btn-sm btn-icon btn-danger" title="Delete" onclick="deleteRisk('${r.id}')">🗑</button>
+                    </div>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:12px;">
+        <div class="card-header"><h3>Risk Heatmap</h3><span class="text-dim text-sm">Probability × Impact</span></div>
+        <div style="display:grid;grid-template-columns:60px repeat(10,48px) 48px;gap:2px;align-items:end;height:240px;">
+          <div style="grid-column:1;"></div>
+          ${Array.from({length:10}, (_, i) => `<div class="risk-axis" style="grid-column:${i+2};">${i*10}</div>`).join('')}
+          <div class="risk-axis" style="grid-column:12;height:100%;">Impact →</div>
+
+          ${[0,10,20,30,40,50,60,70,80,90].map(prob => {
+            return `<div style="grid-column:1;display:flex;align-items:center;justify-content:flex-end;padding-right:4px;font-size:10px;color:var(--text-dim);">${prob}%</div>`
+          }).join('')}
+
+          ${[0,10,20,30,40,50,60,70,80,90].map(prob => {
+            return `[0,10,20,30,40,50,60,70,80,90].map(impact => {
+              const cellProb = prob + 5
+              const cellImpact = impact + 5
+              const score = cellProb * cellImpact / 100
+              const risksInCell = risks.filter(r => r.probability >= cellProb - 5 && r.probability < cellProb + 5 && r.impact >= cellImpact - 5 && r.impact < cellImpact + 5)
+              const color = score > 60 ? 'var(--red)' : score > 30 ? 'var(--yellow)' : 'var(--green)'
+              const bg = score > 60 ? 'rgba(248,81,73,.25)' : score > 30 ? 'rgba(210,153,34,.25)' : 'rgba(63,185,80,.25)'
+              return \`<div class="risk-cell" style="grid-column:\${impact+2};background:\${bg};color:\${color};border-color:\${risksInCell.length ? 'var(--text-dim)' : 'transparent'};" title="\${risksInCell.length} risks · score \${score.toFixed(0)}">\${risksInCell.length || ''}</div>\`
+            }).join('')
+          }).join('')}
+        </div>
+      </div>
+    `}
+  `
+
+  const filterEl = document.getElementById('risk-filter')
+  if (filterEl) filterEl.addEventListener('change', filterRisks)
+}
+
+async function getProjectName(id) {
+  if (!id) return '—'
+  try {
+    const p = await API.get(`/api/projects/${id}`)
+    return p.name
+  } catch { return '—' }
+}
+
+async function filterRisks() {
+  const status = document.getElementById('risk-filter').value
+  const risks = await API.get(`/api/risks${status ? `?status=${status}` : ''}`)
+  const tbody = document.getElementById('risks-body')
+  if (tbody) {
+    tbody.innerHTML = risks.map(r => `
+      <tr data-status="${r.status}">
+        <td>
+          <div class="fw-500">${r.title}</div>
+          <div class="text-dim text-xs">${r.type}</div>
+        </td>
+        <td><span class="tag tag-blue">${r.type}</span></td>
+        <td class="text-dim">${r.project_id ? (await getProjectName(r.project_id)) : '—'}</td>
+        <td class="text-center">${r.probability}%</td>
+        <td class="text-center">${r.impact}%</td>
+        <td class="text-center"><span class="tag tag-${r.risk_score > 60 ? 'red' : r.risk_score > 30 ? 'yellow' : 'green'}" style="font-weight:600;">${r.risk_score.toFixed(0)}</span></td>
+        <td class="text-dim">${r.predicted_date ? new Date(r.predicted_date).toLocaleDateString('en-GB') : '—'}</td>
+        <td><span class="tag tag-${r.status === 'mitigated' ? 'green' : r.status === 'closed' ? 'blue' : 'yellow'}">${r.status}</span></td>
+        <td>
+          <div class="flex gap-2">
+            <button class="btn btn-sm btn-icon" title="Edit" onclick="editRisk('${r.id}')">✏️</button>
+            <button class="btn btn-sm btn-icon btn-danger" title="Delete" onclick="deleteRisk('${r.id}')">🗑</button>
+          </div>
+        </td>
+      </tr>
+    `).join('')
+  }
+}
+
+async function runAIScan() {
+  showToast('Running AI risk analysis...', 'success')
+  try {
+    const projects = await API.get('/api/projects')
+    for (const p of projects) {
+      try {
+        await API.post('/api/risks/ai-scan', { project_id: p.id })
+      } catch {}
+    }
+    showToast('AI risk scan complete')
+    renderPage()
+  } catch (err) {
+    showToast('AI scan failed: ' + err.message, 'error')
+  }
+}
+
+async function editRisk(id) {
+  const risk = await API.get(`/api/risks/${id}`)
+  const modal = document.createElement('div')
+  modal.className = 'modal-overlay'
+  modal.innerHTML = `
+    <div class="modal">
+      <h3>Edit Risk</h3>
+      <form id="edit-risk-form">
+        <input type="hidden" name="id" value="${risk.id}">
+        <div class="form-row">
+          <div class="form-group"><label>Type</label><select name="type">
+            ${['cost','schedule','safety','quality','supply','weather','labor','regulatory','general'].map(t => `<option value="${t}" ${risk.type===t?'selected':''}>${t}</option>`).join('')}
+          </select></div>
+          <div class="form-group"><label>Title</label><input name="title" value="${risk.title}"></div>
+        </div>
+        <div class="form-row-3">
+          <div class="form-group"><label>Probability</label><input name="probability" type="number" min="0" max="100" value="${risk.probability}"></div>
+          <div class="form-group"><label>Impact</label><input name="impact" type="number" min="0" max="100" value="${risk.impact}"></div>
+          <div class="form-group"><label>Status</label><select name="status">
+            <option value="open" ${risk.status==='open'?'selected':''}>Open</option>
+            <option value="mitigated" ${risk.status==='mitigated'?'selected':''}>Mitigated</option>
+            <option value="closed" ${risk.status==='closed'?'selected':''}>Closed</option>
+          </select></div>
+        </div>
+        <div class="form-group"><label>Mitigation</label><textarea name="mitigation" rows="2">${risk.mitigation || ''}</textarea></div>
+        <button type="submit" class="btn btn-primary">Save</button>
+      </form>
+    </div>
+  `
+  modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove() })
+  document.body.appendChild(modal)
+  modal.querySelector('#edit-risk-form').addEventListener('submit', async (e) => {
+    e.preventDefault()
+    const data = Object.fromEntries(new FormData(e.target).entries())
+    delete data.id
+    try {
+      await API.patch(`/api/risks/${id}`, data)
+      modal.remove()
+      renderPage()
+      showToast('Risk updated')
+    } catch (err) { showToast(err.message, 'error') }
+  })
+}
+
+async function deleteRisk(id) {
+  if (!confirm('Delete this risk?')) return
+  try {
+    await API.delete(`/api/risks/${id}`)
+    renderPage()
+    showToast('Risk deleted')
+  } catch (err) { showToast(err.message, 'error') }
+}
+
+// ── Snags Page ────────────────────────────────────────────────────────────────
+async function renderSnags(content, sidebar) {
+  const snags = await API.get('/api/snags')
+  const projects = await API.get('/api/projects')
+
+  sidebar.innerHTML = `
+    <div class="section">Navigation</div>
+    <a href="#" data-page="dashboard" onclick="navigate('dashboard')" class="${currentPage==='dashboard'?'active':''}"><span class="icon">🏠</span> Dashboard</a>
+    <a href="#" data-page="projects" onclick="navigate('projects')" class="${currentPage==='projects'?'active':''}"><span class="icon">📋</span> Projects</a>
+    <a href="#" data-page="risks" onclick="navigate('risks')" class="${currentPage==='risks'?'active':''}"><span class="icon">⚠️</span> Risks</a>
+    <a href="#" data-page="snags" class="active"><span class="icon">🔍</span> Snags</a>
+    <a href="#" data-page="rfis" onclick="navigate('rfis')" class="${currentPage==='rfis'?'active':''}"><span class="icon">❓</span> RFIs</a>
+    <div style="flex:1;"></div>
+    <div class="section">Workspace</div>
+    <div style="padding:8px 12px;font-size:12px;color:var(--text-dim);">${getUser()?.name || 'Workspace'}</div>
+  `
+
+  content.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
+      <h2>Site Snags</h2>
+      <div class="flex gap-2">
+        <button class="btn" onclick="showToast('Photo upload coming soon — use the mobile app')">📷 Upload Photo</button>
+        <button class="btn btn-primary" onclick="openSnagModal()">+ Report Snag</button>
+      </div>
+    </div>
+
+    ${snags.length === 0 ? `
+      <div class="card">
+        <div class="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35M11 8v6M8 11h6"/></svg>
+          <p>No snags reported yet. Use the AI site agent or upload photos to detect defects automatically.</p>
+          <button class="btn btn-primary" style="margin-top:12px;" onclick="openSnagModal()">+ Report Snag</button>
+        </div>
+      </div>
+    ` : `
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;">
+        ${snags.map(s => `
+          <div class="card" style="cursor:pointer;">
+            ${s.photo_url ? `<div style="width:100%;height:160px;object-fit:cover;border-radius:6px;margin-bottom:8px;background:var(--bg-elev);display:flex;align-items:center;justify-content:center;"><img src="${s.photo_url}" style="width:100%;height:100%;object-fit:cover;border-radius:6px;" alt="snag"></div>` : ''}
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+              <span class="tag tag-${s.priority === 'high' ? 'red' : s.priority === 'med' ? 'yellow' : 'gray'}">${s.priority}</span>
+              <span class="tag tag-${s.status === 'resolved' ? 'green' : 'yellow'}">${s.status}</span>
+            </div>
+            <div class="fw-500" style="font-size:14px;">${s.ai_description || s.location || 'Snag reported'}</div>
+            <div class="text-dim text-xs">${s.snag_type ? s.snag_type : 'Unknown type'} · ${s.ai_confidence ? 'AI confidence: ' + s.ai_confidence.toFixed(0) + '%' : ''}</div>
+            <div class="text-dim text-xs" style="margin-top:4px;">${s.location || 'Location not specified'}</div>
+            <div style="display:flex;justify-content:space-between;margin-top:8px;">
+              <span class="text-xs text-dim">Created ${new Date(s.created_at).toLocaleDateString('en-GB')}</span>
+              <div class="flex gap-1">
+                <button class="btn btn-sm btn-icon" onclick="editSnag('${s.id}')">✏️</button>
+                <button class="btn btn-sm btn-icon btn-danger" onclick="deleteSnag('${s.id}')">🗑</button>
+              </div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `}
+  `
+
+  window.openSnagModal = openSnagModal
+  window.editSnag = editSnag
+  window.deleteSnag = deleteSnag
+}
+
+function openSnagModal() {
+  const modal = document.createElement('div')
+  modal.className = 'modal-overlay'
+  modal.innerHTML = `
+    <div class="modal">
+      <h3>Report Snag</h3>
+      <form id="snag-form">
+        <div class="form-group"><label>Description *</label><textarea name="ai_description" rows="3" placeholder="Describe the defect or issue you can see..." required></textarea></div>
+        <div class="form-row">
+          <div class="form-group"><label>Snag type</label><select name="snag_type">
+            <option value="cracks">Cracks</option>
+            <option value="damp">Damp / Moisture</option>
+            <option value="mould">Mould</option>
+            <option value="hairline">Hairline cracks</option>
+            <option value="structural">Structural</option>
+            <option value="fire-safety">Fire Safety</option>
+            <option value="electrical">Electrical</option>
+            <option value="plumbing">Plumbing</option>
+            <option value="access">Access Issue</option>
+            <option value="housekeeping">Housekeeping</option>
+            <option value="other">Other</option>
+          </select></div>
+          <div class="form-group"><label>Priority</label><select name="priority">
+            <option value="high">High</option><option value="med" selected>Medium</option><option value="low">Low</option>
+          </select></div>
+        </div>
+        <div class="form-group"><label>Location on site</label><input name="location" type="text" placeholder="Level 3, North wing, near stair B"></div>
+        <button type="submit" class="btn btn-primary">Report Snag</button>
+      </form>
+    </div>
+  `
+  modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove() })
+  document.body.appendChild(modal)
+  modal.querySelector('#snag-form').addEventListener('submit', async (e) => {
+    e.preventDefault()
+    const data = Object.fromEntries(new FormData(e.target).entries())
+    try {
+      await API.post('/api/snags', data)
+      modal.remove()
+      renderPage()
+      showToast('Snag reported')
+    } catch (err) { showToast(err.message, 'error') }
+  })
+}
+
+async function editSnag(id) {
+  const snag = await API.get(`/api/snags/${id}`)
+  const modal = document.createElement('div')
+  modal.className = 'modal-overlay'
+  modal.innerHTML = `
+    <div class="modal">
+      <h3>Edit Snag</h3>
+      <form id="edit-snag-form">
+        <input type="hidden" name="id" value="${snag.id}">
+        <div class="form-group"><label>Description</label><textarea name="ai_description" rows="2">${snag.ai_description || ''}</textarea></div>
+        <div class="form-row">
+          <div class="form-group"><label>Priority</label><select name="priority">
+            <option value="high" ${snag.priority==='high'?'selected':''}>High</option>
+            <option value="med" ${snag.priority==='med'?'selected':''}>Medium</option>
+            <option value="low" ${snag.priority==='low'?'selected':''}>Low</option>
+          </select></div>
+          <div class="form-group"><label>Status</label><select name="status">
+            <option value="open" ${snag.status==='open'?'selected':''}>Open</option>
+            <option value="in-progress" ${snag.status==='in-progress'?'selected':''}>In Progress</option>
+            <option value="resolved" ${snag.status==='resolved'?'selected':''}>Resolved</option>
+          </select></div>
+        </div>
+        <div class="form-group"><label>Location</label><input name="location" value="${snag.location || ''}"></div>
+        <button type="submit" class="btn btn-primary">Save</button>
+      </form>
+    </div>
+  `
+  modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove() })
+  document.body.appendChild(modal)
+  modal.querySelector('#edit-snag-form').addEventListener('submit', async (e) => {
+    e.preventDefault()
+    const data = Object.fromEntries(new FormData(e.target).entries())
+    delete data.id
+    try {
+      await API.patch(`/api/snags/${id}`, data)
+      modal.remove()
+      renderPage()
+      showToast('Snag updated')
+    } catch (err) { showToast(err.message, 'error') }
+  })
+}
+
+async function deleteSnag(id) {
+  if (!confirm('Delete this snag?')) return
+  try {
+    await API.delete(`/api/snags/${id}`)
+    renderPage()
+    showToast('Snag deleted')
+  } catch (err) { showToast(err.message, 'error') }
+}
+
+// ── RFIs Page ─────────────────────────────────────────────────────────────────
+async function renderRFIs(content, sidebar) {
+  const rfis = await API.get('/api/rfis')
+  const projects = await API.get('/api/projects')
+
+  sidebar.innerHTML = `
+    <div class="section">Navigation</div>
+    <a href="#" data-page="dashboard" onclick="navigate('dashboard')" class="${currentPage==='dashboard'?'active':''}"><span class="icon">🏠</span> Dashboard</a>
+    <a href="#" data-page="projects" onclick="navigate('projects')" class="${currentPage==='projects'?'active':''}"><span class="icon">📋</span> Projects</a>
+    <a href="#" data-page="risks" onclick="navigate('risks')" class="${currentPage==='risks'?'active':''}"><span class="icon">⚠️</span> Risks</a>
+    <a href="#" data-page="snags" onclick="navigate('snags')" class="${currentPage==='snags'?'active':''}"><span class="icon">🔍</span> Snags</a>
+    <a href="#" data-page="rfis" class="active"><span class="icon">❓</span> RFIs</a>
+    <div style="flex:1;"></div>
+    <div class="section">Workspace</div>
+    <div style="padding:8px 12px;font-size:12px;color:var(--text-dim);">${getUser()?.name || 'Workspace'}</div>
+  `
+
+  content.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
+      <h2>RFIs</h2>
+      <div class="flex gap-2">
+        <button class="btn" onclick="showToast('Auto-RFI from snag: select a snag to generate an RFI')">🔗 Auto from Snag</button>
+        <button class="btn btn-primary" onclick="openRFIModal()">+ New RFI</button>
+      </div>
+    </div>
+
+    ${rfis.length === 0 ? `
+      <div class="card">
+        <div class="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3M12 17h.01"/></svg>
+          <p>No RFIs yet. Create an RFI when you need clarification from designers, engineers, or clients.</p>
+          <button class="btn btn-primary" style="margin-top:12px;" onclick="openRFIModal()">+ Create RFI</button>
+        </div>
+      </div>
+    ` : `
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;">
+        ${rfis.map(r => `
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+              <span class="tag tag-${r.priority === 'high' ? 'red' : r.priority === 'med' ? 'yellow' : 'gray'}">${r.priority}</span>
+              <span class="tag tag-${r.status === 'answered' ? 'green' : r.status === 'closed' ? 'blue' : 'yellow'}">${r.status}</span>
+            </div>
+            <div class="fw-500">${r.question}</div>
+            ${r.ref_drawing ? `<div class="text-dim text-xs">Ref: ${r.ref_drawing}</div>` : ''}
+            ${r.ref_location ? `<div class="text-dim text-xs">Location: ${r.ref_location}</div>` : ''}
+            ${r.answer ? `<div style="margin-top:8px;padding:8px;background:var(--bg-elev);border-radius:6px;"><div class="text-dim text-xs">Answer from ${r.answered_by || 'respondent'}:</div><div class="mt-2">${r.answer}</div></div>` : ''}
+            <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:11px;color:var(--text-mute);">
+              ${r.ai_generated ? '🤖 AI-generated' : 'Manual'}
+              ${new Date(r.created_at).toLocaleDateString('en-GB')}
+            </div>
+            <div style="display:flex;gap:4px;margin-top:8px;">
+              <button class="btn btn-sm btn-icon" onclick="editRfi('${r.id}')">✏️</button>
+              <button class="btn btn-sm btn-icon btn-danger" onclick="deleteRfi('${r.id}')">🗑</button>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `}
+  `
+
+  window.openRFIModal = openRFIModal
+  window.editRfi = editRfi
+  window.deleteRfi = deleteRfi
+}
+
+function openRFIModal() {
+  const modal = document.createElement('div')
+  modal.className = 'modal-overlay'
+  modal.innerHTML = `
+    <div class="modal">
+      <h3>New RFI</h3>
+      <form id="rfi-form">
+        <div class="form-group"><label>Question *</label><textarea name="question" rows="3" placeholder="What is the specified fire rating for the partition walls on level 2?" required></textarea></div>
+        <div class="form-row">
+          <div class="form-group"><label>Reference drawing</label><input name="ref_drawing" type="text" placeholder="Drawing A-102"></div>
+          <div class="form-group"><label>Location</label><input name="ref_location" type="text" placeholder="Level 2, east corridor"></div>
+        </div>
+        <div class="form-group"><label>Priority</label><select name="priority">
+          <option value="high">High — urgent</option><option value="med" selected>Medium</option><option value="low">Low</option>
+        </select></div>
+        <div class="form-group"><label>Submit to</label><input name="submitted_to" type="text" placeholder="Structural Engineer"></div>
+        <button type="submit" class="btn btn-primary">Submit RFI</button>
+      </form>
+    </div>
+  `
+  modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove() })
+  document.body.appendChild(modal)
+  modal.querySelector('#rfi-form').addEventListener('submit', async (e) => {
+    e.preventDefault()
+    const data = Object.fromEntries(new FormData(e.target).entries())
+    try {
+      await API.post('/api/rfis', data)
+      modal.remove()
+      renderPage()
+      showToast('RFI submitted')
+    } catch (err) { showToast(err.message, 'error') }
+  })
+}
+
+async function editRfi(id) {
+  const rfi = await API.get(`/api/rfis/${id}`)
+  const modal = document.createElement('div')
+  modal.className = 'modal-overlay'
+  modal.innerHTML = `
+    <div class="modal">
+      <h3>Edit RFI</h3>
+      <form id="edit-rfi-form">
+        <div class="form-group"><label>Question</label><textarea name="question" rows="2">${rfi.question}</textarea></div>
+        <div class="form-row">
+          <div class="form-group"><label>Ref drawing</label><input name="ref_drawing" value="${rfi.ref_drawing || ''}"></div>
+          <div class="form-group"><label>Location</label><input name="ref_location" value="${rfi.ref_location || ''}"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Priority</label><select name="priority">
+            <option value="high" ${rfi.priority==='high'?'selected':''}>High</option>
+            <option value="med" ${rfi.priority==='med'?'selected':''}>Medium</option>
+            <option value="low" ${rfi.priority==='low'?'selected':''}>Low</option>
+          </select></div>
+          <div class="form-group"><label>Status</label><select name="status">
+            <option value="open" ${rfi.status==='open'?'selected':''}>Open</option>
+            <option value="answered" ${rfi.status==='answered'?'selected':''}>Answered</option>
+            <option value="closed" ${rfi.status==='closed'?'selected':''}>Closed</option>
+          </select></div>
+        </div>
+        ${rfi.status !== 'answered' ? `<div class="form-group"><label>Answer</label><textarea name="answer" rows="2" placeholder="Enter the response..."></textarea></div>
+        <div class="form-group"><label>Answered by</label><input name="answered_by" type="text" placeholder="Name of respondent"></div>` : ''}
+        <button type="submit" class="btn btn-primary">Save</button>
+      </form>
+    </div>
+  `
+  modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove() })
+  document.body.appendChild(modal)
+  modal.querySelector('#edit-rfi-form').addEventListener('submit', async (e) => {
+    e.preventDefault()
+    const data = Object.fromEntries(new FormData(e.target).entries())
+    try {
+      await API.patch(`/api/rfis/${id}`, data)
+      modal.remove()
+      renderPage()
+      showToast('RFI updated')
+    } catch (err) { showToast(err.message, 'error') }
+  })
+}
+
+async function deleteRfi(id) {
+  if (!confirm('Delete this RFI?')) return
+  try {
+    await API.delete(`/api/rfis/${id}`)
+    renderPage()
+    showToast('RFI deleted')
+  } catch (err) { showToast(err.message, 'error') }
+}
+
+// ── Subcontractors Page ───────────────────────────────────────────────────────
+async function renderSubs(content, sidebar) {
+  const subs = await API.get('/api/subcontractors')
+  const bids = await API.get('/api/bid-opportunities')
+
+  sidebar.innerHTML = `
+    <div class="section">Navigation</div>
+    <a href="#" data-page="dashboard" onclick="navigate('dashboard')" class="${currentPage==='dashboard'?'active':''}"><span class="icon">🏠</span> Dashboard</a>
+    <a href="#" data-page="projects" onclick="navigate('projects')" class="${currentPage==='projects'?'active':''}"><span class="icon">📋</span> Projects</a>
+    <a href="#" data-page="subs" class="active"><span class="icon">👷</span> Subcontractors</a>
+    <a href="#" data-page="logs" onclick="navigate('logs')" class="${currentPage==='logs'?'active':''}"><span class="icon">📝</span> Daily Logs</a>
+    <div style="flex:1;"></div>
+    <div class="section">Workspace</div>
+    <div style="padding:8px 12px;font-size:12px;color:var(--text-dim);">${getUser()?.name || 'Workspace'}</div>
+  `
+
+  content.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
+      <h2>Subcontractor Network</h2>
+      <div class="flex gap-2">
+        <button class="btn" onclick="showToast('AI match feature: describe your scope to find matching subs')">🤖 AI Match</button>
+        <button class="btn btn-primary" onclick="openSubModal()">+ Add Subcontractor</button>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <div class="card">
+        <div class="card-header"><h3>Subcontractors (${subs.length})</h3><button class="btn btn-sm" onclick="openSubModal()">+ Add</button></div>
+        ${subs.length === 0 ? `
+          <div class="empty-state" style="padding:20px;"><p>No subcontractors in your network yet.</p></div>
+        ` : `
+          <table style="font-size:13px;">
+            <thead><tr><th>Name</th><th>Trade</th><th>Rating</th><th>Jobs</th><th>Reliability</th></tr></thead>
+            <tbody>
+              ${subs.map(s => `
+                <tr>
+                  <td class="fw-500">${s.name}</td>
+                  <td><span class="tag tag-blue">${s.trade}</span></td>
+                  <td class="text-center">${s.rating > 0 ? s.rating.toFixed(1) : '—'}</td>
+                  <td class="text-center">${s.completed_jobs || 0}</td>
+                  <td><span class="tag tag-${s.reliability > 70 ? 'green' : s.reliability > 40 ? 'yellow' : 'red'}">${s.reliability.toFixed(0)}%</span></td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `}
+      </div>
+
+      <div class="card">
+        <div class="card-header"><h3>Bid Opportunities (${bids.length})</h3><button class="btn btn-sm" onclick="openBidModal()">+ New Opportunity</button></div>
+        ${bids.length === 0 ? `
+          <div class="empty-state" style="padding:20px;"><p>No bid opportunities yet. Create a scope of work to invite subcontractor bids.</p></div>
+        ` : `
+          <table style="font-size:13px;">
+            <thead><tr><th>Scope</th><th>Trade</th><th>Value</th><th>Status</th></tr></thead>
+            <tbody>
+              ${bids.map(b => `
+                <tr>
+                  <td class="truncate" style="max-width:180px;">${b.scope_desc.substring(0, 50)}</td>
+                  <td><span class="tag tag-blue">${b.trade || 'General'}</span></td>
+                  <td>£${b.estimated_value ? parseFloat(b.estimated_value).toLocaleString('en-GB', {maximumFractionDigits:0}) : '—'}</td>
+                  <td><span class="tag tag-${b.status === 'awarded' ? 'green' : b.status === 'published' ? 'blue' : 'yellow'}">${b.status}</span></td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `}
+      </div>
+    </div>
+  `
+
+  window.openSubModal = openSubModal
+  window.openBidModal = openBidModal
+}
+
+function openSubModal() {
+  const modal = document.createElement('div')
+  modal.className = 'modal-overlay'
+  modal.innerHTML = `
+    <div class="modal">
+      <h3>Add Subcontractor</h3>
+      <form id="sub-form">
+        <div class="form-row">
+          <div class="form-group"><label>Company name *</label><input name="name" type="text" placeholder="ABC Electrical Ltd" required></div>
+          <div class="form-group"><label>Trade *</label><select name="trade" required>
+            <option value="Electrical">Electrical</option>
+            <option value="Plumbing">Plumbing</option>
+            <option value="HVAC">HVAC</option>
+            <option value="Structural">Structural</option>
+            <option value="Roofing">Roofing</option>
+            <option value="Flooring">Flooring</option>
+            <option value="Painting">Painting</option>
+            <option value=" scaffolding">Scaffolding</option>
+            <option value="Civil">Civil Engineering</option>
+            <option value="General">General Builder</option>
+          </select></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Contact name</label><input name="contact" type="text" placeholder="Dave Williams"></div>
+          <div class="form-group"><label>Email</label><input name="email" type="email" placeholder="dave@abcelectrical.co.uk"></div>
+        </div>
+        <div class="form-group"><label>Phone</label><input name="phone" type="tel" placeholder="07700 900 123"></div>
+        <button type="submit" class="btn btn-primary">Add Subcontractor</button>
+      </form>
+    </div>
+  `
+  modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove() })
+  document.body.appendChild(modal)
+  modal.querySelector('#sub-form').addEventListener('submit', async (e) => {
+    e.preventDefault()
+    const data = Object.fromEntries(new FormData(e.target).entries())
+    try {
+      await API.post('/api/subcontractors', data)
+      modal.remove()
+      renderPage()
+      showToast('Subcontractor added')
+    } catch (err) { showToast(err.message, 'error') }
+  })
+}
+
+function openBidModal() {
+  const modal = document.createElement('div')
+  modal.className = 'modal-overlay'
+  modal.innerHTML = `
+    <div class="modal">
+      <h3>New Bid Opportunity</h3>
+      <form id="bid-form">
+        <div class="form-group"><label>Scope description *</label><textarea name="scope_desc" rows="3" placeholder="First fix electrical — all floors, approximately 200 sockets, 50 light fittings, consumer units" required></textarea></div>
+        <div class="form-row">
+          <div class="form-group"><label>Trade</label><select name="trade">
+            <option value="Electrical">Electrical</option>
+            <option value="Plumbing">Plumbing</option>
+            <option value="HVAC">HVAC</option>
+            <option value="Structural">Structural</option>
+            <option value="Roofing">Roofing</option>
+            <option value="Flooring">Flooring</option>
+            <option value="Painting">Painting</option>
+            <option value=" scaffolding">Scaffolding</option>
+            <option value="Civil">Civil Engineering</option>
+            <option value="General">General Builder</option>
+          </select></div>
+          <div class="form-group"><label>Est. value (£)</label><input name="estimated_value" type="number" placeholder="45000"></div>
+        </div>
+        <button type="submit" class="btn btn-primary">Create Opportunity</button>
+      </form>
+    </div>
+  `
+  modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove() })
+  document.body.appendChild(modal)
+  modal.querySelector('#bid-form').addEventListener('submit', async (e) => {
+    e.preventDefault()
+    const data = Object.fromEntries(new FormData(e.target).entries())
+    try {
+      await API.post('/api/bid-opportunities', data)
+      modal.remove()
+      renderPage()
+      showToast('Bid opportunity created')
+    } catch (err) { showToast(err.message, 'error') }
+  })
+}
+
+// ── Daily Logs Page ────────────────────────────────────────────────────────────
+async function renderLogs(content, sidebar) {
+  const logs = await API.get('/api/daily-logs')
+  const projects = await API.get('/api/projects')
+
+  sidebar.innerHTML = `
+    <div class="section">Navigation</div>
+    <a href="#" data-page="dashboard" onclick="navigate('dashboard')" class="${currentPage==='dashboard'?'active':''}"><span class="icon">🏠</span> Dashboard</a>
+    <a href="#" data-page="projects" onclick="navigate('projects')" class="${currentPage==='projects'?'active':''}"><span class="icon">📋</span> Projects</a>
+    <a href="#" data-page="logs" class="active"><span class="icon">📝</span> Daily Logs</a>
+    <a href="#" data-page="agent" onclick="navigate('agent')" class="${currentPage==='agent'?'active':''}"><span class="icon">🤖</span> AI Agent</a>
+    <div style="flex:1;"></div>
+    <div class="section">Workspace</div>
+    <div style="padding:8px 12px;font-size:12px;color:var(--text-dim);">${getUser()?.name || 'Workspace'}</div>
+  `
+
+  content.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
+      <h2>Daily Progress Logs</h2>
+      <div class="flex gap-2">
+        <button class="btn" onclick="showToast('Voice input coming soon — use the mobile app to dictate logs on site')">🎤 Voice Log</button>
+        <button class="btn btn-primary" onclick="openLogModal()">+ New Log</button>
+      </div>
+    </div>
+
+    ${logs.length === 0 ? `
+      <div class="card">
+        <div class="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          <p>No daily logs yet. Start recording daily progress — the AI agent can turn voice notes into structured logs.</p>
+          <button class="btn btn-primary" style="margin-top:12px;" onclick="openLogModal()">+ Record Log</button>
+        </div>
+      </div>
+    ` : `
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px;">
+        ${logs.map(log => `
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+              <div class="fw-500">${new Date(log.log_date).toLocaleDateString('en-GB', {weekday:'short',day:'numeric',month:'short'})}</div>
+              <span class="tag tag-blue">${log.crew_count || 0} crew</span>
+            </div>
+            ${log.ai_summary ? `<div class="text-dim" style="font-size:13px;margin-bottom:8px;">${log.ai_summary}</div>` : ''}
+            ${log.narrative ? `<div class="text-dim text-sm">${log.narrative.substring(0, 200)}${log.narrative.length > 200 ? '…' : ''}</div>` : ''}
+            ${log.ai_extracted && JSON.parse(log.ai_extracted || '{}').activities?.length ? `
+              <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">
+                <div class="text-xs text-dim">AI extracted activities:</div>
+                <div class="flex flex-wrap gap-1 mt-2">
+                  ${JSON.parse(log.ai_extracted).activities?.map(a => `<span class="tag tag-gray" style="font-size:10px;">${a}</span>`).join('') || ''}
+                </div>
+              </div>
+            ` : ''}
+            <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:11px;color:var(--text-mute);">
+              ${log.created_by || 'Site team'}
+              ${log.photos && JSON.parse(log.photos).length ? `📷 ${JSON.parse(log.photos).length} photos` : ''}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `}
+  `
+
+  window.openLogModal = openLogModal
+}
+
+function openLogModal() {
+  const modal = document.createElement('div')
+  modal.className = 'modal-overlay'
+  modal.innerHTML = `
+    <div class="modal" style="max-width:600px;">
+      <h3>New Daily Log</h3>
+      <form id="log-form">
+        <div class="form-row">
+          <div class="form-group"><label>Date</label><input name="log_date" type="date" value="${new Date().toISOString().split('T')[0]}" required></div>
+          <div class="form-group"><label>Crew count</label><input name="crew_count" type="number" min="0" value="0"></div>
+        </div>
+        <div class="form-group"><label>What happened today? (voice note or text) *</label>
+          <textarea name="narrative" rows="4" placeholder="Poured concrete for foundations, levels 1-3. Crew of 8 plus 2 pump operators. Weather: dry, 18°C. Slight delay due to pump breakdown — fixed by 11am. Next: start reinforcement for column bases." required></textarea>
+        </div>
+        <div class="form-group"><label>Project (optional)</label>
+          <select name="project_id">
+            <option value="">No specific project</option>
+            ${(await API.get('/api/projects')).map(p => `<option value="${p.id}">${p.name}</option>`).join('')}
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Record Log</button>
+      </form>
+    </div>
+  `
+  modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove() })
+  document.body.appendChild(modal)
+  modal.querySelector('#log-form').addEventListener('submit', async (e) => {
+    e.preventDefault()
+    const data = Object.fromEntries(new FormData(e.target).entries())
+    try {
+      const res = await API.post('/api/daily-logs', data)
+      modal.remove()
+      renderPage()
+      showToast('Log recorded' + (res.ai_summary ? ' — AI summarized it' : ''))
+    } catch (err) { showToast(err.message, 'error') }
+  })
+}
+
+// ── AI Agent Page ──────────────────────────────────────────────────────────────
+async function renderAgent(content, sidebar) {
+  const conversations = await API.get('/api/ai/conversations')
+
+  sidebar.innerHTML = `
+    <div class="section">AI Agent</div>
+    <div style="padding:8px 12px;font-size:12px;color:var(--text-dim);">
+      Chat with the AI Site Agent. Ask about your projects, risks, snags, or just describe what you need.
+    </div>
+    <div style="flex:1;"></div>
+    <div class="section">Workspace</div>
+    <div style="padding:8px 12px;font-size:12px;color:var(--text-dim);">${getUser()?.name || 'Workspace'}</div>
+  `
+
+  content.innerHTML = `
+    <div class="card" style="flex:1;display:flex;flex-direction:column;">
+      <div class="card-header" style="flex-shrink:0;">
+        <h3>AI Site Agent</h3>
+        <div class="text-dim text-sm">Asking about your projects, risks, and site activity</div>
+      </div>
+
+      <div id="agent-chat" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:12px;padding:8px 0;min-height:300px;max-height:400px;">
+        ${conversations.length > 0 ? conversations.map(c => `
+          <div style="display:flex;gap:8px;${c.role === 'user' ? 'justify-content:flex-end;' : ''}">
+            <div style="max-width:80%;background:${c.role === 'user' ? 'var(--blue)' : 'var(--bg-elev)'};color:${c.role === 'user' ? '#fff' : 'var(--text)'};padding:10px 14px;border-radius:12px;${c.role === 'user' ? 'border-bottom-right-radius:4px;' : 'border-bottom-left-radius:4px;'}">
+              ${c.content.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}
+            </div>
+            <div style="width:28px;height:28px;border-radius:50%;background:${c.role === 'user' ? 'var(--blue)' : 'var(--purple)'};display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;flex-shrink:0;">${c.role === 'user' ? 'U' : 'C'}</div>
+          </div>
+        `).join('') : `
+          <div style="text-align:center;padding:40px;color:var(--text-dim);">
+            <div style="font-size:32px;margin-bottom:8px;">🤖</div>
+            <p style="font-size:14px;">Hi, I'm Cortex — your AI Site Agent. Ask me about your construction projects, risks, snags, or anything on site.</p>
+            <p style="font-size:12px;margin-top:4px;">Try: "What are the top risks on my projects?" or "Create a new project called Riverside Block"</p>
+          </div>
+        `}
+      </div>
+
+      <form id="agent-form" style="display:flex;gap:8px;flex-shrink:0;padding:12px 0;border-top:1px solid var(--border);">
+        <input id="agent-input" type="text" placeholder="Ask me anything about your construction projects..."
+          style="flex:1;padding:10px 14px;font-size:14px;border-radius:20px;" autocomplete="off">
+        <button type="submit" class="btn btn-primary" style="border-radius:20px;padding:10px 20px;">Send</button>
+      </form>
+    </div>
+  `
+
+  document.getElementById('agent-form').addEventListener('submit', async (e) => {
+    e.preventDefault()
+    const input = document.getElementById('agent-input')
+    const message = input.value.trim()
+    if (!message) return
+
+    input.value = ''
+    const chat = document.getElementById('agent-chat')
+
+    // Add user message
+    const userDiv = document.createElement('div')
+    userDiv.style.cssText = 'display:flex;justify-content:flex-end;gap:8px;'
+    userDiv.innerHTML = `
+      <div style="max-width:80%;background:var(--blue);color:#fff;padding:10px 14px;border-radius:12px;border-bottom-right-radius:4px;">${message.replace(/\n/g, '<br>')}</div>
+      <div style="width:28px;height:28px;border-radius:50%;background:var(--blue);display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;flex-shrink:0;">U</div>
+    `
+    chat.appendChild(userDiv)
+    chat.scrollTop = chat.scrollHeight
+
+    try {
+      const res = await API.post('/api/ai/agent', { message, project_id: currentProjectId })
+      const assistantDiv = document.createElement('div')
+      assistantDiv.style.cssText = 'display:flex;gap:8px;'
+      assistantDiv.innerHTML = `
+        <div style="width:28px;height:28px;border-radius:50%;background:var(--purple);display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;flex-shrink:0;">C</div>
+        <div style="max-width:80%;background:var(--bg-elev);color:var(--text);padding:10px 14px;border-radius:12px;border-bottom-left-radius:4px;">${res.response.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</div>
+      `
+      chat.appendChild(assistantDiv)
+      chat.scrollTop = chat.scrollHeight
+
+      if (res.action) {
+        showToast('Action processed: ' + Object.keys(res.action).join(', '))
+      }
+    } catch (err) {
+      const errDiv = document.createElement('div')
+      errDiv.style.cssText = 'display:flex;gap:8px;'
+      errDiv.innerHTML = `
+        <div style="max-width:80%;background:var(--red);color:#fff;padding:10px 14px;border-radius:12px;">Error: ${err.message}</div>
+      `
+      chat.appendChild(errDiv)
+      showToast(err.message, 'error')
+    }
+  })
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  const token = localStorage.getItem('cb_token')
+  if (token) {
+    document.getElementById('login-page').style.display = 'none'
+    document.getElementById('app-shell').style.display = ''
+    renderApp()
+  }
+})
+</script>
+</body>
+</html>
