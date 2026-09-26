@@ -1,7 +1,7 @@
 // ── Subcontractors Skill — management + AI matching ─────────────────────────
 import { db } from '../db.js'
 import * as schema from '../schema.js'
-import { eq, and, desc } from 'drizzle-orm'
+import { eq, and, desc, sql } from 'drizzle-orm'
 import { createId } from '@paralleldrive/cuid2'
 
 export default function subcontractorsSkill(f) {
@@ -14,7 +14,7 @@ export default function subcontractorsSkill(f) {
       const { trade } = req.query
       const conds = [eq(schema.subcontractors.workspace_id, req.user.workspace_id)]
       if (trade) conds.push(eq(schema.subcontractors.trade, trade))
-      return await db.select().from(schema.subcontractors).where(conds).orderBy(desc(schema.subcontractors.rating))
+      return await db.select().from(schema.subcontractors).where(conds).orderBy(sql`${schema.subcontractors.rating} DESC`)
     },
   })
 
@@ -76,7 +76,7 @@ export default function subcontractorsSkill(f) {
       const conds = [eq(schema.bid_opportunities.workspace_id, req.user.workspace_id)]
       if (project_id) conds.push(eq(schema.bid_opportunities.project_id, project_id))
       if (status) conds.push(eq(schema.bid_opportunities.status, status))
-      return await db.select().from(schema.bid_opportunities).where(conds).orderBy(desc(schema.bid_opportunities.created_at))
+      return await db.select().from(schema.bid_opportunities).where(conds).orderBy(sql`${schema.bid_opportunities.created_at} DESC`)
     },
   })
 
@@ -131,7 +131,7 @@ export default function subcontractorsSkill(f) {
       const conds = [eq(schema.subcontractor_bids.workspace_id, req.user.workspace_id)]
       if (opportunity_id) conds.push(eq(schema.subcontractor_bids.bid_id, opportunity_id))
       if (status) conds.push(eq(schema.subcontractor_bids.status, status))
-      return await db.select().from(schema.subcontractor_bids).where(conds.length ? and(...conds) : undefined).orderBy(desc(schema.subcontractor_bids.submitted_at))
+      return await db.select().from(schema.subcontractor_bids).where(conds.length ? and(...conds) : undefined).orderBy(sql`${schema.subcontractor_bids.submitted_at} DESC`)
     },
   })
 
@@ -159,7 +159,7 @@ export default function subcontractorsSkill(f) {
 
       const candidates = await db.select().from(schema.subcontractors)
         .where(and(eq(schema.subcontractors.workspace_id, req.user.workspace_id)))
-        .orderBy(desc(schema.subcontractors.rating), desc(schema.subcontractors.completed_jobs))
+        .orderBy(sql`${schema.subcontractors.rating} DESC`, sql`${schema.subcontractors.completed_jobs} DESC`)
 
       const scored = candidates
         .filter(c => c.trade === trade || (c.specializations && JSON.parse(c.specializations || '[]').includes(trade)))

@@ -158,7 +158,7 @@ Focus on real, data-grounded risks — be specific and concrete.` },
 
       const risks = await db.select().from(schema.risks)
         .where(and(eq(schema.risks.project_id, projectId), eq(schema.risks.workspace_id, req.user.workspace_id)))
-        .orderBy(desc(schema.risks.risk_score))
+        .orderBy(sql`${schema.risks.risk_score} DESC`)
 
       return { risks, analysis, project_risk: { risk_score: avgScore, health_color: avgScore > 60 ? 'red' : avgScore > 30 ? 'yellow' : 'green' } }
     },

@@ -31,7 +31,7 @@ export default function authPlugin(f) {
       const workspaceId = createId()
 
       const existing = await db.select().from(schema.users).where(eq(schema.users.email, email)).get()
-      if (existing) return { error: 'Email already registered', status: 409 }
+      if (existing) return reply.code(409).send({ error: 'Email already registered', status: 409 })
 
       await db.insert(schema.workspaces).values({
         id: workspaceId,
@@ -71,9 +71,9 @@ export default function authPlugin(f) {
       const { email, password } = req.body
       const user = await db.select().from(schema.users).where(eq(schema.users.email, email)).get()
 
-      if (!user) return { error: 'Invalid credentials', status: 401 }
+      if (!user) return reply.code(401).send({ error: 'Invalid credentials', status: 401 })
       if (!await bcrypt.compare(password, user.password_hash))
-        return { error: 'Invalid credentials', status: 401 }
+        return reply.code(401).send({ error: 'Invalid credentials', status: 401 })
 
       const token = f.jwt.sign({
         userId: user.id,

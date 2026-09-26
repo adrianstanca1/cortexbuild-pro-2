@@ -1,7 +1,7 @@
 // ── Snags Skill — AI photo-based defect detection ──────────────────────────
 import { db } from '../db.js'
 import * as schema from '../schema.js'
-import { eq, and, desc, isNull } from 'drizzle-orm'
+import { eq, and, desc, sql } from 'drizzle-orm'
 import { createId } from '@paralleldrive/cuid2'
 
 export default function snagsSkill(f) {
@@ -15,7 +15,7 @@ export default function snagsSkill(f) {
       const conds = [eq(schema.snags.workspace_id, req.user.workspace_id)]
       if (project_id) conds.push(eq(schema.snags.project_id, project_id))
       if (status) conds.push(eq(schema.snags.status, status))
-      return await db.select().from(schema.snags).where(conds).orderBy(desc(schema.snags.priority), desc(schema.snags.created_at))
+      return await db.select().from(schema.snags).where(conds).orderBy(sql`${schema.snags.priority} DESC`, sql`${schema.snags.created_at} DESC`)
     },
   })
 

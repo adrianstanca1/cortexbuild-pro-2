@@ -15,7 +15,7 @@ export default function financeSkill(f) {
       const conds = [eq(schema.invoices.workspace_id, req.user.workspace_id)]
       if (project_id) conds.push(eq(schema.invoices.project_id, project_id))
       if (status) conds.push(eq(schema.invoices.status, status))
-      return await db.select().from(schema.invoices).where(conds).orderBy(desc(schema.invoices.issued))
+      return await db.select().from(schema.invoices).where(conds).orderBy(sql`${schema.invoices.issued.name} DESC`)
     },
   })
 
@@ -66,7 +66,7 @@ export default function financeSkill(f) {
       const conds = [eq(schema.quotes.workspace_id, req.user.workspace_id)]
       if (project_id) conds.push(eq(schema.quotes.project_id, project_id))
       if (status) conds.push(eq(schema.quotes.status, status))
-      return await db.select().from(schema.quotes).where(conds).orderBy(desc(schema.quotes.issued))
+      return await db.select().from(schema.quotes).where(conds).orderBy(sql`${schema.quotes.issued.name} DESC`)
     },
   })
 

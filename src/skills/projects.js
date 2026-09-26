@@ -1,7 +1,7 @@
 // ── Projects Skill ──────────────────────────────────────────────────────────
 import { db } from '../db.js'
 import * as schema from '../schema.js'
-import { eq, and, or, ilike, desc, asc, isNull } from 'drizzle-orm'
+import { eq, and, or, ilike, desc, asc, isNull, sql } from 'drizzle-orm'
 import { z } from 'zod'
 import { createId } from '@paralleldrive/cuid2'
 
@@ -22,7 +22,7 @@ export default function projectsSkill(f) {
           ilike(schema.projects.addr, `%${search}%`),
         )
       )
-      return await db.select().from(schema.projects).where(conds).orderBy(desc(schema.projects.created_at)).limit(limit).offset(offset)
+      return await db.select().from(schema.projects).where(conds).orderBy(sql`${schema.projects.created_at.name} DESC`).limit(limit).offset(offset)
     },
   })
 
@@ -109,7 +109,7 @@ export default function projectsSkill(f) {
       if (project_id) conds.push(eq(schema.tasks.project_id, project_id))
       if (done !== undefined) conds.push(eq(schema.tasks.done, done === 'true' || done === true))
       if (prio) conds.push(eq(schema.tasks.prio, prio))
-      return await db.select().from(schema.tasks).where(conds).orderBy(schema.tasks.done, desc(schema.tasks.prio), asc(schema.tasks.due))
+      return await db.select().from(schema.tasks).where(conds).orderBy(schema.tasks.done, sql`${schema.tasks.prio} DESC`, asc(schema.tasks.due))
     },
   })
 

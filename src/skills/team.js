@@ -64,7 +64,7 @@ export default function teamSkill(f) {
     onRequest: [f.authenticate],
     handler: async (req) => {
       await db.delete(schema.team_members).where(and(eq(schema.team_members.id, req.params.id), eq(schema.team_members.workspace_id, req.user.workspace_id)))
-      const deleted = db.select().from(schema.team_members).where(eq(schema.team_members.id, req.params.id)).get()
+      const deleted = await db.select().from(schema.team_members).where(eq(schema.team_members.id, req.params.id)).get()
       return deleted || { error: 'Team member not found', status: 404 }
     },
   })

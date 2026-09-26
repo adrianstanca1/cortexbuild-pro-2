@@ -1,20 +1,13 @@
-{
-  "origin": ["caddy.{.}:80"],
-  "apps": {
-    "http_port": 80,
-    "https_port": 443
-  },
-  "sites": {
-    "cortexbuildpro.tech:80": {
-      "root": "/srv/static",
-      "reverse_proxy": ["api:3000"],
-      "file_server": true
-    },
-    "cortexbuildpro.tech:443": {
-      "root": "/srv/static",
-      "reverse_proxy": ["api:3000"],
-      "file_server": true,
-      "tls": {"production": true}
+cortexbuildpro.tech {
+    # Serve static SPA
+    root * /srv/static
+    file_server
+
+    # Reverse proxy API to Fastify
+    reverse_proxy /api/* api:3000
+
+    # HTTPS with automatic cert
+    tls {
+        production
     }
-  }
 }

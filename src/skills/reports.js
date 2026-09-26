@@ -14,7 +14,7 @@ export default function reportsSkill(f) {
       const conds = [eq(schema.reports.workspace_id, req.user.workspace_id)]
       if (project_id) conds.push(eq(schema.reports.project_id, project_id))
       if (report_type) conds.push(eq(schema.reports.report_type, report_type))
-      return await db.select().from(schema.reports).where(conds).orderBy(desc(schema.reports.generated_at))
+      return await db.select().from(schema.reports).where(conds).orderBy(sql`${schema.reports.generated_at} DESC`)
     },
   })
 

@@ -155,7 +155,7 @@ Respond in a helpful, professional construction-expert tone. Mention specific pr
       const { status } = req.query
       const conds = [eq(schema.ai_jobs.workspace_id, req.user.workspace_id)]
       if (status) conds.push(eq(schema.ai_jobs.status, status))
-      return await db.select().from(schema.ai_jobs).where(conds).orderBy(desc(schema.ai_jobs.created_at))
+      return await db.select().from(schema.ai_jobs).where(conds).orderBy(sql`${schema.ai_jobs.created_at} DESC`)
     },
   })
 
