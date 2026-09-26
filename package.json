@@ -17,7 +17,7 @@
     "bcrypt": "^5.1.1",
     "better-sqlite3": "^11.6.0",
     "cors": "^2.8.5",
-    "drizzle-orm": "^0.40.0",
+    "drizzle-orm": "^0.45.3",
     "fastify": "^5.0.0",
     "undici": "^7.0.0",
     "uuid": "^11.0.0",
