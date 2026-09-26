@@ -1,5 +1,4 @@
 FROM node:22-alpine AS base
-RUN apk add --no-cache python3 make g++ vips-dev
 
 FROM base AS build
 WORKDIR /app
@@ -9,7 +8,7 @@ COPY . .
 
 FROM base AS production
 WORKDIR /app
-RUN apk add --no-cache vips-dev
+RUN apk add --no-cache python3 make g++
 COPY --from=build /app/node_modules /app/node_modules
 COPY --from=build /app/src /app/src
 COPY --from=build /app/static /app/static
